@@ -1,0 +1,17 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/Neg16.hdl
+
+/**
+ * Negates a 16 bit value in 2's Complement
+ */
+
+CHIP Neg16 {
+    IN a[16];
+    OUT out[16];
+
+    PARTS:
+    Xor16(a= a, b= true, out= xorOut);
+    Inc16(in=xorOut, out=out);
+}
