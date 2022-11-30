@@ -42,5 +42,30 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // Perform the zero or negation for X
+    Neg16(a= x, out= xNeg);
+    Mux16(a= x, b= xNeg, sel= nx, out= xNegOrNot);
+    Mux16(a= xNegOrNot, b= false, sel= zx, out= xProcessed);
+    // Perform the zero or negation for Y
+    Neg16(a= y, out= yNeg);
+    Mux16(a= y, b= yNeg, sel= ny, out= yNegOrNot);
+    Mux16(a= yNegOrNot, b= false, sel= zy, out= yProcessed);
+    // Add X with Y, AND X with Y
+    Add16(a= xProcessed, b= yProcessed, out= xyAdded);
+    And16(a= xProcessed, b= yProcessed, out= xyAnded);
+    // Select the required function
+    Mux16(a= xyAdded, b= xyAnded, sel= f, out= functionOut);
+    // Final check for negation of output
+    // don't pass it to the output yet so we can read it
+    Mux16(a= functionOut, b= false, sel= no, out = almostOut);
+    // Check for zero
+    Or8Way(in=almostOut[0..7],  out=out8wayOr1);
+    Or8Way(in=almostOut[8..15], out=out8wayOr2);
+    Or(a=out8wayOr1, b=out8wayOr1, out=anybit);
+    // if anybit is 1, there is a bit, hence the output is not zero
+    Not(in=anybit, out=zr);
+    // if the first bit of the output is 1 then the output is negative
+    Or(a=almostOut[15], b=false, out= ng);
+    // pass the output to out via a chip so we can read 'almostOut'
+    And16(a=almostOut, b=true, out=out);
 }
