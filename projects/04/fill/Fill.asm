@@ -27,10 +27,11 @@
     M=D
 
 (MONITOR)
-    @R0 // Register 0 is a temporary toggle to decided whether to change the screen colour
-    D=M
-    @MONITOR
-    D;JEQ
+    //@R0 // Register 0 is a temporary toggle to decided whether to change the screen colour
+    //@keyboard // apparently register 24576 is keyboard scanning register, if it's non-zero something has been pressed
+    //D=M
+    //@MONITOR
+    // D;JEQ
 
     @SCREEN // Point at the Register allocated for the screen
     D=A; // Retrieve the address
@@ -39,7 +40,8 @@
     @loopCount
     M=0
 
-    @R1 // Register 1 is the colour switch
+    // @R1 //Register 1 is the colour switch
+    @KBD
     D=M
 
     @MAKEBLACK // If Register 1 is Greater Than 0, make the screen black
