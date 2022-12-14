@@ -39,5 +39,28 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+
+    ALU(x=, y=, zx=, nx=, zy=, ny=, f=, no=, out=, zr=CalcIs0, ng=CalcIsLt0);
+    
+    // Jump Circuitry
+    // Component 1 - Decode Jump Instruction to Cases, note that the last output is a non-conditional
+        // if the instruction is a Control instruction, allow for jumps, otherwise disallow jumps.
+        // instruction[16] is 1 if its a control instruction, otherwise it's an arithmetic instruction and there are no jumps.
+    DMux8Way(in=instruction[16], sel=instruction[0..2], a=noJump, b=JumpIfGt0, c=JumpIf0, d=JumpIfGe0, e=JumpIfLt0, f=JumpIfNe0, g=JumpIfLe0, h=Jump);
+    // Component Bunch 2 - ALU Calculation cases
+    Not (in=CalcIs0,               out=CalcIsNot0);
+    Not (in=CalcIsLt0,             out=CalcIsGt0);
+    Or  (a=CalcIs0,   b=CalcIsGt0, out=CalcIsGe0);
+    Or  (a=CalcIsLt0, b=CalcIs0,   out=CalcIsLe0);
+        // Jump cases, see figure 4.5
+        And(a=JumpIfGt0, b=CalcIsGt0, out=Jump);
+        And(a=JumpIf0,   b=CalcIs0,   out=Jump);
+        And(a=JumpIfGe0, b=CalcIsGe0, out=Jump);
+        And(a=JumpIfLt0, b=CalcIsLt0, out=Jump);
+        And(a=JumpIfNe0, b=CalcIsNe0, out=Jump);
+        And(a=JumpIfLe0, b=CalcIsLe0, out=Jump);
+
+    // Program Counter Circuitry
+    PC(in=, load=Jump, inc=, reset=reset, out[0..14]=pc);
+
 }
