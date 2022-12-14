@@ -63,9 +63,9 @@ CHIP CPU {
     // Circuitry for the A Register multiplexer
     Mux16(a=instruction, b=ALUOutputM, sel=ALUToARegister, out=ARegisterIn);
     // Define the A Register
-    Register(in=ARegisterIn, load=ALUToARegister, load=AInstruction, out=ARegisterOut, out[0..14]=addressM);
+    ARegister(in=ARegisterIn, load=ALUToARegister, load=AInstruction, out=ARegisterOut, out[0..14]=addressM);
     // Define the D Register
-    Register(in=ALUOutputM, load=ALUToDRegister, out=DRegisterOut);
+    DRegister(in=ALUOutputM, load=ALUToDRegister, out=DRegisterOut);
     // Define the ALU 'Y' input Multiplexer
     Mux16(a=ARegisterOut, b=inM, sel=MToALU, out=ARegisterOrInM);
 
