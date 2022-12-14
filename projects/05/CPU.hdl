@@ -39,8 +39,37 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
+    //Instruction[16bits] description: 'ixxaccccccdddjjj'
+    //instruction[15] = i, i == 0 for an A-instruction (a for address), i == 1 for a C-instruction (c for control)
+    //instruction[13..14] = x are not used
+    //instruction[12] = a, a == 0 sends the A register to the ALU, a == 1 sends the M input to the ALU
+    //instruction[6..11] = c, which are the control bits for the ALU, 
+    //instruction[3..5] = d, selects which memory register should accept the ALU's output, M, see figure 4.4
+    //instruction[0..2] = j, Is the jump condition selector - this requires custom circuitry, see figure 4.5
 
-    ALU(x=, y=, zx=, nx=, zy=, ny=, f=, no=, out=, zr=CalcIs0, ng=CalcIsLt0);
+    writeM = instruction[3];
+
+    // Handle the detection of an A-Instruction (instruction[15] == 0)
+    Not(in=instruction[15], out=AInstruction);
+
+    // Handle D inputs, ensuring destination registers are only set when it's a C-instruction (instruction[15] ==1 )
+    And(a=instruction[15], b=instruction[5], out=ALUToARegister);
+    And(a=instruction[15], b=instruction[4], out=ALUToDRegister);
+    And(a=instruction[15], b=instruction[3], out=ALUToMemoryA);
+
+    // Handle the ALU input multiplexer Selector
+    And(a=instruction[15], b=instruction[12], out=MToALU);
+
+    // Circuitry for the A Register multiplexer
+    Mux16(a=instruction, b=ALUOutputM, sel=ALUToARegister, out=ARegisterIn);
+    // Define the A Register
+    Register(in=ARegisterIn, load=ALUToARegister, load=AInstruction, out=ARegisterOut, out[0..14]=addressM);
+    // Define the D Register
+    Register(in=ALUOutputM, load=ALUToDRegister, out=DRegisterOut);
+    // Define the ALU 'Y' input Multiplexer
+    Mux16(a=ARegisterOut, b=inM, sel=MToALU, out=ARegisterOrInM);
+
+    ALU(x=DRegisterOut, y=ALUInputY, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=outM, out=ALUOutputM, zr=CalcIs0, ng=CalcIsLt0);
     
     // Jump Circuitry
     // Component 1 - Decode Jump Instruction to Cases, note that the last output is a non-conditional
@@ -61,6 +90,6 @@ CHIP CPU {
         And(a=JumpIfLe0, b=CalcIsLe0, out=Jump);
 
     // Program Counter Circuitry
-    PC(in=, load=Jump, inc=, reset=reset, out[0..14]=pc);
+    PC(in=ARegisterOut, load=Jump, inc=true, reset=reset, out[0..14]=pc);
 
 }
