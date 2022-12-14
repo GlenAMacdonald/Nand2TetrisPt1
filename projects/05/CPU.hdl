@@ -80,8 +80,8 @@ CHIP CPU {
     DMux8Way(in=instruction[15], sel=instruction[0..2], a=noJump, b=JumpIfGt0, c=JumpIf0, d=JumpIfGe0, e=JumpIfLt0, f=JumpIfNe0, g=JumpIfLe0, h=AlwaysJump);
     // Component Bunch 2 - ALU Calculation cases
     Not (in=CalcIs0,               out=CalcIsNe0);
-    Not (in=CalcIsLt0,             out=CalcIsGt0);
-    Or  (a=CalcIs0,   b=CalcIsGt0, out=CalcIsGe0);
+    Not (in=CalcIsLt0              out=CalcIsGe0);
+    And (a=CalcIsNe0, b=CalcIsGe0, out=CalcIsGt0);
     Or  (a=CalcIsLt0, b=CalcIs0,   out=CalcIsLe0);
         // Jump cases, see figure 4.5
         And(a=JumpIfGt0, b=CalcIsGt0, out=JumpGt0);
