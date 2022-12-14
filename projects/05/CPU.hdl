@@ -47,7 +47,7 @@ CHIP CPU {
     //instruction[3..5] = d, selects which memory register should accept the ALU's output, M, see figure 4.4
     //instruction[0..2] = j, Is the jump condition selector - this requires custom circuitry, see figure 4.5
 
-    writeM = instruction[3];
+    And(b=instruction[15], a=instruction[3], out=writeM);
 
     // Handle the detection of an A-Instruction (instruction[15] == 0)
     Not(in=instruction[15], out=AInstruction);
