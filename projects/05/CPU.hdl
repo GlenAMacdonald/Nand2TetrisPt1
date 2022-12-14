@@ -77,7 +77,7 @@ CHIP CPU {
         // instruction[16] is 1 if its a control instruction, otherwise it's an arithmetic instruction and there are no jumps.
     DMux8Way(in=instruction[15], sel=instruction[0..2], a=noJump, b=JumpIfGt0, c=JumpIf0, d=JumpIfGe0, e=JumpIfLt0, f=JumpIfNe0, g=JumpIfLe0, h=AlwaysJump);
     // Component Bunch 2 - ALU Calculation cases
-    Not (in=CalcIs0,               out=CalcIsNot0);
+    Not (in=CalcIs0,               out=CalcIsNe0);
     Not (in=CalcIsLt0,             out=CalcIsGt0);
     Or  (a=CalcIs0,   b=CalcIsGt0, out=CalcIsGe0);
     Or  (a=CalcIsLt0, b=CalcIs0,   out=CalcIsLe0);
