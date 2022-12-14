@@ -75,7 +75,7 @@ CHIP CPU {
     // Component 1 - Decode Jump Instruction to Cases, note that the last output is a non-conditional
         // if the instruction is a Control instruction, allow for jumps, otherwise disallow jumps.
         // instruction[16] is 1 if its a control instruction, otherwise it's an arithmetic instruction and there are no jumps.
-    DMux8Way(in=instruction[16], sel=instruction[0..2], a=noJump, b=JumpIfGt0, c=JumpIf0, d=JumpIfGe0, e=JumpIfLt0, f=JumpIfNe0, g=JumpIfLe0, h=Jump);
+    DMux8Way(in=instruction[15], sel=instruction[0..2], a=noJump, b=JumpIfGt0, c=JumpIf0, d=JumpIfGe0, e=JumpIfLt0, f=JumpIfNe0, g=JumpIfLe0, h=Jump);
     // Component Bunch 2 - ALU Calculation cases
     Not (in=CalcIs0,               out=CalcIsNot0);
     Not (in=CalcIsLt0,             out=CalcIsGt0);
