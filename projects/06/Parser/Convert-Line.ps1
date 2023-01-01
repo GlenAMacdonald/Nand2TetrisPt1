@@ -121,9 +121,55 @@ function Split-Command {
     }
 
     if (($Computation -eq '') -or (-not $Computation)) {
-        Write-Host "Computation was not parsed - problem with compiler";
+        Write-Host "Computation was not parsed - problem with compiler function 'Split-Command'";
     }
 
     $ReturnObject = @{'Destination' = $Destination; 'Computation' = $Computation; 'Jump' = $Jump};
     return $ReturnObject;
+}
+
+function Convert-Command {
+    # Command Binary Syntax = 111aC1C2C3C4C5C6D1D2D3J1J2J3,
+    # or equivalently = 111CommandInBinaryDestinationInBinaryJumpInBinary
+    param (
+        [String]$Command
+    )
+    $Commands = Split-Command($Command);
+    $JumpInBinary = Convert-Jump($Commands.Jump);
+    $DestinationInBinary = Convert-Destination($Commands.Destination);
+    $ComputationInBinary = Convert-Computation($Commands.Computation);
+    $CommandInBinary = '111' + $ComputationInBinary + $DestinationInBinary + $JumpInBinary;
+
+    return $CommandInBinary;
+}
+
+function Convert-Address {
+    param (
+        [String]$Address
+    )
+
+    if ([convert]::ToInt32($Address -Replace '@','')) {
+        return Convert-Value($Address);
+    } elseif ([convert]::ToInt32($Address -Replace '@R','')) {
+        return Convert-Value($Address);
+    } else {
+        return $null;
+    }
+
+}
+
+function Convert-Line {
+    param (
+        [String]$Line
+    )
+
+    if ($Line.Contains('@')){
+        $ReturnValue = Convert-Address($Line);
+    } elseif ($Line.Contains('(')) {
+        $ReturnValue = $null;
+    } else {
+        $ReturnValue = Convert-Command;
+    }
+
+    return $ReturnValue;
 }

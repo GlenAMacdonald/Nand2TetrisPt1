@@ -136,11 +136,31 @@ Describe "Check it splits commands correctly" {
             $Commands.Destination   | Should -Be 'M';
             $Commands.Computation   | Should -Be 'D+M';
         }
-        It "Command 0;JMP - Returns Jump = null, Destination = M, Computation = 'D+M'" {
+        It "Command 0;JMP - Returns Jump = JMP, Destination = null, Computation = 0" {
             $Commands = Split-Command('0;JMP');
             $Commands.Jump          | Should -Be 'JMP';
             $Commands.Destination   | Should -Be 'null';
             $Commands.Computation   | Should -Be '0';
+        }
+        It "Command D;JGT - Returns Jump = JGT, Destination = null, Computation = D" {
+            $Commands = Split-Command('D;JGT');
+            $Commands.Jump          | Should -Be 'JGT';
+            $Commands.Destination   | Should -Be 'null';
+            $Commands.Computation   | Should -Be 'D';
+        }
+    }
+
+    Describe "Check some full command conversions" {
+        Context "Simple Commands" {
+            It "Command: D = D&A,       Returns '1110000000010000'" {
+                Convert-Command('D=D&A') | Should -Be '1110000000010000';
+            }
+            It "Command: D;JMP,         Returns '1110001100000111'" {
+                Convert-Command('D;JMP') | Should -Be '1110001100000111';
+            }
+            It "Command: AMD=M-D;JNE,   Returns '1111000111111101'" {
+                Convert-Command('AMD=M-D;JNE') | Should -Be '1111000111111101';
+            }
         }
     }
 }
