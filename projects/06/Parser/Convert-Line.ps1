@@ -241,9 +241,7 @@ function Convert-File {
     $ClearedFile = Clear-AllLines $LoadedFile;
     $ConvertedFile = Convert-LineList $ClearedFile;
     
-    return $ConvertedFile;
-  
-    
+    return $ConvertedFile;   
 }
 
 function Convert-FileAndSave {
@@ -251,5 +249,34 @@ function Convert-FileAndSave {
         [String]$Path
     )
     $ConvertedFile = Convert-File $Path;
+    $ConvertedFile | Out-File ($Path -replace 'asm','hack');
+}
+
+function Convert-FileWithSymbols {
+    param (
+        [String]$Path
+    )
+     
+    Import-Module ./Clear-Line.ps1 -Force;
+    Import-Module ./Convert-Symbol.ps1 -Force;
+
+    if (-not (Test-Path $Path)) {
+        Write-Host "File could not be found at $Path";
+        return $null;
+    }
+
+    $LoadedFile = Get-Content $Path;
+    $ClearedFile = Clear-AllLines $LoadedFile;
+    $NonSymbolicFile = Convert-Symbols $ClearedFile;
+    $ConvertedFile = Convert-LineList $NonSymbolicFile;
+    
+    return $ConvertedFile;   
+}
+
+function Convert-FileAndSaveRemovingSymbols {
+    param (
+        [String]$Path
+    )
+    $ConvertedFile = Convert-FileWithSymbols $Path;
     $ConvertedFile | Out-File ($Path -replace 'asm','hack');
 }

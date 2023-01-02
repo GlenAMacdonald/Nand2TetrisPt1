@@ -1,5 +1,6 @@
 BeforeAll{
     Import-Module .\Convert-Line.ps1 -Force;
+    Import-Module .\Convert-Symbol.ps1 -Force;
 }
 
 Describe "Checks Conversion of Addresses to Binary Values" {
@@ -278,6 +279,53 @@ Describe "Load a program from file and evaluate conversion against known correct
             $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/pong/PongL.asm';
             $PathCorrect = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/pong/PongLCorrect.hack';
             Convert-FileAndSave $Path;
+            $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
+            $CorrectFile = Get-Content ($PathCorrect);
+            
+            ($ReLoadedFile.Length -eq $CorrectFile.Length) | Should -Be $True;
+            $index = 0;
+            while ($index -lt $ReLoadedFile.Length) {
+                ($ReLoadedFile[$index] -eq $CorrectFile[$index]) | Should -Be $True;
+                $index++;
+            }
+        }
+    }
+}
+
+Describe "Load a program from file and evaluate conversion against known correct file" {
+    Context "Max.asm" {
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/max/Max.asm';
+            $PathCorrect = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/max/MaxCorrect.hack';
+            Convert-FileAndSaveRemovingSymbols $Path;
+            $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
+            $CorrectFile = Get-Content ($PathCorrect);
+            
+            ($ReLoadedFile.Length -eq $CorrectFile.Length) | Should -Be $True;
+            $index = 0;
+            while ($index -lt $ReLoadedFile.Length) {
+                ($ReLoadedFile[$index] -eq $CorrectFile[$index]) | Should -Be $True;
+                $index++;
+            }
+        }
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/pong/Pong.asm';
+            $PathCorrect = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/pong/PongCorrect.hack';
+            Convert-FileAndSaveRemovingSymbols $Path;
+            $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
+            $CorrectFile = Get-Content ($PathCorrect);
+            
+            ($ReLoadedFile.Length -eq $CorrectFile.Length) | Should -Be $True;
+            $index = 0;
+            while ($index -lt $ReLoadedFile.Length) {
+                ($ReLoadedFile[$index] -eq $CorrectFile[$index]) | Should -Be $True;
+                $index++;
+            }
+        }
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/rect/Rect.asm';
+            $PathCorrect = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/rect/RectCorrect.hack';
+            Convert-FileAndSaveRemovingSymbols $Path;
             $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
             $CorrectFile = Get-Content ($PathCorrect);
             
