@@ -257,3 +257,36 @@ Describe "Load a program from file and evaluate conversion" {
         }
     }
 }
+
+Describe "Load a program from file and evaluate conversion against known correct file" {
+    Context "MaxL.asm" {
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/max/MaxL.asm';
+            $PathCorrect = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/max/MaxLCorrect.hack';
+            Convert-FileAndSave $Path;
+            $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
+            $CorrectFile = Get-Content ($PathCorrect);
+            
+            ($ReLoadedFile.Length -eq $CorrectFile.Length) | Should -Be $True;
+            $index = 0;
+            while ($index -lt $ReLoadedFile.Length) {
+                ($ReLoadedFile[$index] -eq $CorrectFile[$index]) | Should -Be $True;
+                $index++;
+            }
+        }
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/pong/PongL.asm';
+            $PathCorrect = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/pong/PongLCorrect.hack';
+            Convert-FileAndSave $Path;
+            $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
+            $CorrectFile = Get-Content ($PathCorrect);
+            
+            ($ReLoadedFile.Length -eq $CorrectFile.Length) | Should -Be $True;
+            $index = 0;
+            while ($index -lt $ReLoadedFile.Length) {
+                ($ReLoadedFile[$index] -eq $CorrectFile[$index]) | Should -Be $True;
+                $index++;
+            }
+        }
+    }
+}
