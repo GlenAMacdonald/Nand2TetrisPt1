@@ -149,18 +149,111 @@ Describe "Check it splits commands correctly" {
             $Commands.Computation   | Should -Be 'D';
         }
     }
+}
 
-    Describe "Check some full command conversions" {
-        Context "Simple Commands" {
-            It "Command: D = D&A,       Returns '1110000000010000'" {
-                Convert-Command('D=D&A') | Should -Be '1110000000010000';
-            }
-            It "Command: D;JMP,         Returns '1110001100000111'" {
-                Convert-Command('D;JMP') | Should -Be '1110001100000111';
-            }
-            It "Command: AMD=M-D;JNE,   Returns '1111000111111101'" {
-                Convert-Command('AMD=M-D;JNE') | Should -Be '1111000111111101';
-            }
+Describe "Check some full command conversions" {
+    Context "Simple Commands" {
+        It "Command: D = D&A,       Returns '1110000000010000'" {
+            Convert-Command('D=D&A') | Should -Be '1110000000010000';
+        }
+        It "Command: D;JMP,         Returns '1110001100000111'" {
+            Convert-Command('D;JMP') | Should -Be '1110001100000111';
+        }
+        It "Command: AMD=M-D;JNE,   Returns '1111000111111101'" {
+            Convert-Command('AMD=M-D;JNE') | Should -Be '1111000111111101';
+        }
+    }
+}
+
+Describe "Check identification of line type" {
+    Context "Identify Address vs Command" {
+        It "Identify Address" {
+            $Line = '@R2';
+            Identify-Type $Line | Should -Be 'Address';
+            $Line = '@2';
+            Identify-Type $Line | Should -Be 'Address';
+        }
+        It "Identify Command" {
+            $Line = 'D=A';
+            Identify-Type $Line | Should -Be 'Command';
+            $Line = 'D=D+A';
+            Identify-Type $Line | Should -Be 'Command';
+            $Line = 'D;JMP';
+            Identify-Type $Line | Should -Be 'Command';
+            $Line = 'D=D+A;JGE';
+            Identify-Type $Line | Should -Be 'Command';
+        }
+    }
+}
+
+Describe "Check line type based conversion" {
+    Context "Convert some Addresses" {
+        It "Simple Addresses" {
+            $Line = '@R2';
+            Convert-Line($Line) | Should -Be '0000000000000010';
+            $Line = '@2';
+            Convert-Line($Line) | Should -Be '0000000000000010';
+            $Line = '@R16';
+            Convert-Line($Line) | Should -Be '0000000000010000';
+            $Line = '@16';
+            Convert-Line($Line) | Should -Be '0000000000010000';
+        }
+    }
+
+    Context "Convert some Commands" {
+        It "Simple Commands" {
+            $Line = 'D=D&A';
+            Convert-Line($Line) | Should -Be '1110000000010000';
+            $Line = 'D;JMP'
+            Convert-Line($Line) | Should -Be '1110001100000111';
+            $Line = 'AMD=M-D;JNE'
+            Convert-Line($Line) | Should -Be '1111000111111101';
+        }
+    }
+}
+
+Describe "Convert a simple Program" {
+    Context "Add.asm" {
+        It "Converts lines" {
+            $Lines = @('@2'; 'D=A'; '@3'; 'D=D+A'; '@0'; 'M=D');
+            $ConvertedLines = Convert-LineList $Lines;
+            $ConvertedLines[0] | Should -Be '0000000000000010';
+            $ConvertedLines[1] | Should -Be '1110110000010000';
+            $ConvertedLines[2] | Should -Be '0000000000000011';
+            $ConvertedLines[3] | Should -Be '1110000010010000';
+            $ConvertedLines[4] | Should -Be '0000000000000000';
+            $ConvertedLines[5] | Should -Be '1110001100001000';
+        }
+    }
+}
+
+Describe "Load a program from file and evaluate conversion" {
+    Context "Add.asm" {
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/add/Add.asm';
+            $ConvertedFile = Convert-File $Path;
+            $ConvertedFile[0] | Should -Be '0000000000000010';
+            $ConvertedFile[1] | Should -Be '1110110000010000';
+            $ConvertedFile[2] | Should -Be '0000000000000011';
+            $ConvertedFile[3] | Should -Be '1110000010010000';
+            $ConvertedFile[4] | Should -Be '0000000000000000';
+            $ConvertedFile[5] | Should -Be '1110001100001000';
+        }
+    }
+}
+
+Describe "Load a program from file and evaluate conversion" {
+    Context "Add.asm" {
+        It "Loads the program and checks the lines" {
+            $Path = '/Users/glenmacdonald/git/Nand2TetrisPt1/projects/06/add/Add.asm';
+            Convert-FileAndSave $Path;
+            $ReLoadedFile = Get-Content ($Path -replace 'asm','hack');
+            $ReLoadedFile[0] | Should -Be '0000000000000010';
+            $ReLoadedFile[1] | Should -Be '1110110000010000';
+            $ReLoadedFile[2] | Should -Be '0000000000000011';
+            $ReLoadedFile[3] | Should -Be '1110000010010000';
+            $ReLoadedFile[4] | Should -Be '0000000000000000';
+            $ReLoadedFile[5] | Should -Be '1110001100001000';
         }
     }
 }

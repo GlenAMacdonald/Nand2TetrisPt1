@@ -128,6 +128,24 @@ function Split-Command {
     return $ReturnObject;
 }
 
+function Identify-Type {
+    param (
+        [String]$line
+    )
+
+    if ($line.Contains('@')) {
+        return 'Address';
+    } elseif ($line.Contains(';') -or $line.Contains('=')) {
+        return 'Command';
+    } else {
+        Write-Host "Line Type was indeterminate - Function Identify-Type needs updating"
+        Write-Host "Problematic line is: $line";
+        return $null;
+    }
+}
+
+
+
 function Convert-Command {
     # Command Binary Syntax = 111aC1C2C3C4C5C6D1D2D3J1J2J3,
     # or equivalently = 111CommandInBinaryDestinationInBinaryJumpInBinary
@@ -143,19 +161,38 @@ function Convert-Command {
     return $CommandInBinary;
 }
 
+function Convert-Commands {
+    param(
+        $Commands
+    )
+
+    $ConvertedCommands = [System.Collections.ArrayList]::new();
+    ForEach ($Command in $Commands) {
+        $ConvertedCommand = Convert-Command($Command);
+        [void]$ConvertedCommands.Add($ConvertedCommand);
+    }
+    
+    return $ConvertedCommands;
+}
+
 function Convert-Address {
     param (
         [String]$Address
     )
 
-    if ([convert]::ToInt32($Address -Replace '@','')) {
-        return Convert-Value($Address);
-    } elseif ([convert]::ToInt32($Address -Replace '@R','')) {
-        return Convert-Value($Address);
-    } else {
-        return $null;
+    try {
+        [void]([convert]::ToInt32(($Address -Replace '@','')));
+        return Convert-Value $Address;
     }
-
+    catch {
+        try {
+            [void]([convert]::ToInt32(($Address -Replace '@R','')));
+            return Convert-Value $Address;
+        }
+        catch {
+            return $null;
+        }
+    }
 }
 
 function Convert-Line {
@@ -163,13 +200,56 @@ function Convert-Line {
         [String]$Line
     )
 
-    if ($Line.Contains('@')){
-        $ReturnValue = Convert-Address($Line);
-    } elseif ($Line.Contains('(')) {
-        $ReturnValue = $null;
-    } else {
-        $ReturnValue = Convert-Command;
+    $LineType = Identify-Type $Line;
+
+    if ($LineType -eq 'Address') {
+        $ConvertedLine = Convert-Address $Line;
+    } elseif ($LineType -eq 'Command') {
+        $ConvertedLine = Convert-Command $Line;
     }
 
-    return $ReturnValue;
+    return $ConvertedLine;
+}
+
+function Convert-LineList {
+    param (
+        $Lines
+    )
+
+    $ConvertedLines = [System.Collections.ArrayList]::new();
+
+    ForEach ($Line in $Lines) {
+        [void]$ConvertedLines.Add((Convert-Line $Line));
+    }
+
+    return $ConvertedLines;
+}
+
+function Convert-File {
+    param (
+        [String]$Path
+    )
+
+    Import-Module ./Clear-Line.ps1 -Force;
+
+    if (-not (Test-Path $Path)) {
+        Write-Host "File could not be found at $Path";
+        return $null;
+    }
+
+    $LoadedFile = Get-Content $Path;
+    $ClearedFile = Clear-AllLines $LoadedFile;
+    $ConvertedFile = Convert-LineList $ClearedFile;
+    
+    return $ConvertedFile;
+  
+    
+}
+
+function Convert-FileAndSave {
+    param (
+        [String]$Path
+    )
+    $ConvertedFile = Convert-File $Path;
+    $ConvertedFile | Out-File ($Path -replace 'asm','hack');
 }
